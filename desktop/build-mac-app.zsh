@@ -16,13 +16,15 @@ if command -v rustup >/dev/null 2>&1; then
   rustup update stable
 fi
 
+TAURI_CLI_VERSION="1.5.9"
+
 if ! command -v cargo-tauri >/dev/null 2>&1; then
   echo "Installing tauri-cli v1..."
-  cargo install tauri-cli --version 1.5.6 --locked
+  cargo install tauri-cli --version "$TAURI_CLI_VERSION"
 else
   if ! cargo tauri --version | grep -q '^1\\.'; then
     echo "Re-installing tauri-cli v1..."
-    cargo install tauri-cli --version 1.5.6 --locked
+    cargo install tauri-cli --version "$TAURI_CLI_VERSION"
   fi
 fi
 
