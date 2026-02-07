@@ -16,18 +16,6 @@ if command -v rustup >/dev/null 2>&1; then
   rustup update stable
 fi
 
-TAURI_CLI_VERSION="1.5.9"
-
-if ! command -v cargo-tauri >/dev/null 2>&1; then
-  echo "Installing tauri-cli v1..."
-  cargo install tauri-cli --version "$TAURI_CLI_VERSION"
-else
-  if ! cargo tauri --version | grep -q '^1\\.'; then
-    echo "Re-installing tauri-cli v1..."
-    cargo install tauri-cli --version "$TAURI_CLI_VERSION"
-  fi
-fi
-
 echo "Building backend (release)..."
 cargo build -p streaming-app --release
 
@@ -42,15 +30,50 @@ cp "$BIN" "$APP_DIR/bin/ruststream"
 
 cd "$APP_DIR"
 
-echo "Building macOS app..."
-cargo tauri build
+echo "Building desktop shell (release)..."
+cargo build -p ruststream-desktop --release
 
-OUT_APP="$ROOT/target/release/bundle/macos/RustStream.app"
-if [ ! -d "$OUT_APP" ]; then
-  echo "App bundle not found at $OUT_APP" >&2
+DESKTOP_BIN="$ROOT/target/release/ruststream-desktop"
+if [ ! -f "$DESKTOP_BIN" ]; then
+  echo "Desktop binary not found at $DESKTOP_BIN" >&2
   exit 1
 fi
 
-cp -R "$OUT_APP" "$HOME/Desktop/RustStream.app"
+APP_OUT="$HOME/Desktop/RustStream.app"
+CONTENTS="$APP_OUT/Contents"
+MACOS_DIR="$CONTENTS/MacOS"
+RESOURCES_DIR="$CONTENTS/Resources"
+
+echo "Packaging .app..."
+rm -rf "$APP_OUT"
+mkdir -p "$MACOS_DIR" "$RESOURCES_DIR/bin"
+
+cp "$DESKTOP_BIN" "$MACOS_DIR/RustStream"
+chmod +x "$MACOS_DIR/RustStream"
+
+cp "$BIN" "$RESOURCES_DIR/bin/ruststream"
+
+cat > "$CONTENTS/Info.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>RustStream</string>
+  <key>CFBundleDisplayName</key>
+  <string>RustStream</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.biggorilla121.ruststream</string>
+  <key>CFBundleExecutable</key>
+  <string>RustStream</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>1.0.1</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0.1</string>
+</dict>
+</plist>
+PLIST
 
 echo "Done. RustStream.app is on your Desktop."
