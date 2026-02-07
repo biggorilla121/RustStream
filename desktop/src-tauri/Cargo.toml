@@ -1,0 +1,19 @@
+[package]
+name = "ruststream-desktop"
+version = "1.0.1"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5" }
+
+[dependencies]
+tauri = { version = "1.5", features = ["api-all"] }
+anyhow = { workspace = true }
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[features]
+# This feature is used for production builds where `tauri` will not open devtools.
+custom-protocol = ["tauri/custom-protocol"]

@@ -1,0 +1,20 @@
+{
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "http://127.0.0.1:3000",
+    "distDir": "../app/static"
+  },
+  "package": {
+    "productName": "RustStream",
+    "version": "1.0.1"
+  },
+  "tauri": {
+    "bundle": {
+      "active": true,
+      "identifier": "com.biggorilla121.ruststream",
+      "externalBin": []
+    },
+    "windows": []
+  }
+}
