@@ -31,7 +31,7 @@ Server starts at `http://127.0.0.1:3000`.
 Environment variables:
 
 - `TMDB_API_KEY` (required)
-  - Use your TMDB v4 read token.
+  - Use your **TMDB v4 Read Access Token** (the long JWT). The short v3 API key will not work.
   - You can set it as either `Bearer <token>` or just the token; the app will add the `Bearer` prefix if missing.
 - `DATABASE_URL` (optional, default: `sqlite://./streaming.db`)
 - `PORT` (optional, default: `3000`)
