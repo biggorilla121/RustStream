@@ -137,7 +137,7 @@ fn resolve_workspace_backend() -> Option<PathBuf> {
 }
 
 fn build_database_url(app: &tauri::AppHandle) -> anyhow::Result<String> {
-    let data_dir = tauri::api::path::app_data_dir(app.config())
+    let data_dir = tauri::api::path::app_data_dir(&app.config())
         .ok_or_else(|| anyhow::anyhow!("Unable to resolve app data directory"))?;
     std::fs::create_dir_all(&data_dir)?;
     let db_path = data_dir.join("streaming.db");
