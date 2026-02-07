@@ -10,7 +10,11 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> anyhow::Result<Self> {
-        dotenvy::dotenv().ok();
+        if let Ok(path) = std::env::var("DOTENVY_FILENAME") {
+            dotenvy::from_filename(path).ok();
+        } else {
+            dotenvy::dotenv().ok();
+        }
 
         let config = ConfigBuilder::builder()
             .add_source(File::with_name("config").required(false))

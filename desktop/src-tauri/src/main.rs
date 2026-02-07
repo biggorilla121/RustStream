@@ -74,28 +74,40 @@ fn read_port() -> u16 {
 }
 
 fn spawn_backend(app: &tauri::AppHandle, port: u16) -> anyhow::Result<Child> {
+    ensure_default_env(app)?;
     let database_url = build_database_url(app)?;
 
     if let Some(path) = resolve_packaged_backend(app) {
-        return spawn_command(path, port, Some(database_url));
+        let env_path = default_env_path(app)?;
+        return spawn_command(path, port, Some(database_url), Some(env_path));
     }
 
     if let Ok(path) = std::env::var("RUSTSTREAM_BACKEND") {
-        return spawn_command(PathBuf::from(path), port, Some(database_url));
+        let env_path = default_env_path(app)?;
+        return spawn_command(PathBuf::from(path), port, Some(database_url), Some(env_path));
     }
 
     if let Some(path) = resolve_workspace_backend() {
-        return spawn_command(path, port, Some(database_url));
+        let env_path = default_env_path(app)?;
+        return spawn_command(path, port, Some(database_url), Some(env_path));
     }
 
     anyhow::bail!("Unable to locate backend binary");
 }
 
-fn spawn_command(path: PathBuf, port: u16, database_url: Option<String>) -> anyhow::Result<Child> {
+fn spawn_command(
+    path: PathBuf,
+    port: u16,
+    database_url: Option<String>,
+    env_path: Option<PathBuf>,
+) -> anyhow::Result<Child> {
     let mut cmd = Command::new(path);
     cmd.env("PORT", port.to_string());
     if let Some(url) = database_url {
         cmd.env("DATABASE_URL", url);
+    }
+    if let Some(path) = env_path {
+        cmd.env("DOTENVY_FILENAME", path);
     }
     cmd.spawn().map_err(|e| e.into())
 }
@@ -141,7 +153,28 @@ fn build_database_url(app: &tauri::AppHandle) -> anyhow::Result<String> {
         .ok_or_else(|| anyhow::anyhow!("Unable to resolve app data directory"))?;
     std::fs::create_dir_all(&data_dir)?;
     let db_path = data_dir.join("streaming.db");
-    Ok(format!("sqlite://{}", db_path.display()))
+    let path_str = db_path.to_string_lossy().to_string();
+    Ok(format!("sqlite://{}", path_str))
+}
+
+fn default_env_path(app: &tauri::AppHandle) -> anyhow::Result<PathBuf> {
+    let data_dir = tauri::api::path::app_data_dir(&app.config())
+        .ok_or_else(|| anyhow::anyhow!("Unable to resolve app data directory"))?;
+    Ok(data_dir.join(".env"))
+}
+
+fn ensure_default_env(app: &tauri::AppHandle) -> anyhow::Result<()> {
+    let env_path = default_env_path(app)?;
+    if let Some(parent) = env_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    if env_path.exists() {
+        return Ok(());
+    }
+
+    std::fs::write(env_path, "TMDB_API_KEY=\n")?;
+    Ok(())
 }
 
 fn backend_binary_name() -> &'static str {
