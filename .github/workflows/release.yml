@@ -60,8 +60,16 @@ jobs:
           cp target/${{ matrix.target }}/release/ruststream-desktop dist/${APP}/Contents/MacOS/RustStream
           cp target/${{ matrix.target }}/release/ruststream dist/${APP}/Contents/Resources/bin/ruststream
           chmod +x dist/${APP}/Contents/MacOS/RustStream dist/${APP}/Contents/Resources/bin/ruststream
-          cat > dist/${APP}/Contents/Info.plist <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
+          python3 - <<'PY'
+from pathlib import Path
+import os
+
+app = "RustStream.app"
+version = os.environ.get("GITHUB_REF_NAME", "0.0.0")
+if version.startswith("v"):
+    version = version[1:]
+
+plist = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -76,12 +84,15 @@ jobs:
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleVersion</key>
-  <string>${GITHUB_REF_NAME#v}</string>
+  <string>{version}</string>
   <key>CFBundleShortVersionString</key>
-  <string>${GITHUB_REF_NAME#v}</string>
+  <string>{version}</string>
 </dict>
 </plist>
-PLIST
+"""
+
+Path(f"dist/{app}/Contents/Info.plist").write_text(plist)
+PY
           ditto -c -k --sequesterRsrc --keepParent dist/${APP} ${{ matrix.asset }}
 
       - name: Package (Windows)
