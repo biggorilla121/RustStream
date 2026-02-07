@@ -27,6 +27,13 @@ fi
 
 mkdir -p "$APP_DIR/bin"
 cp "$BIN" "$APP_DIR/bin/ruststream"
+ARCH="$(uname -m)"
+if [ "$ARCH" = "arm64" ]; then
+  TARGET_TRIPLE="aarch64-apple-darwin"
+else
+  TARGET_TRIPLE="x86_64-apple-darwin"
+fi
+cp "$BIN" "$APP_DIR/bin/ruststream-$TARGET_TRIPLE"
 
 cd "$APP_DIR"
 
