@@ -1,10 +1,18 @@
-use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
+use sqlx::{sqlite::SqliteConnectOptions, sqlite::SqlitePoolOptions, Pool, Sqlite};
+use std::str::FromStr;
 use tracing::info;
 
 pub async fn init_db(database_url: &str) -> anyhow::Result<Pool<Sqlite>> {
+    let options = if database_url.starts_with("sqlite:") {
+        SqliteConnectOptions::from_str(database_url)?
+    } else {
+        SqliteConnectOptions::new().filename(database_url)
+    }
+    .create_if_missing(true);
+
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
-        .connect(database_url)
+        .connect_with(options)
         .await?;
 
     info!("Running database migrations...");
