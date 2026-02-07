@@ -74,24 +74,29 @@ fn read_port() -> u16 {
 }
 
 fn spawn_backend(app: &tauri::AppHandle, port: u16) -> anyhow::Result<Child> {
+    let database_url = build_database_url(app)?;
+
     if let Some(path) = resolve_packaged_backend(app) {
-        return spawn_command(path, port);
+        return spawn_command(path, port, Some(database_url));
     }
 
     if let Ok(path) = std::env::var("RUSTSTREAM_BACKEND") {
-        return spawn_command(PathBuf::from(path), port);
+        return spawn_command(PathBuf::from(path), port, Some(database_url));
     }
 
     if let Some(path) = resolve_workspace_backend() {
-        return spawn_command(path, port);
+        return spawn_command(path, port, Some(database_url));
     }
 
     anyhow::bail!("Unable to locate backend binary");
 }
 
-fn spawn_command(path: PathBuf, port: u16) -> anyhow::Result<Child> {
+fn spawn_command(path: PathBuf, port: u16, database_url: Option<String>) -> anyhow::Result<Child> {
     let mut cmd = Command::new(path);
     cmd.env("PORT", port.to_string());
+    if let Some(url) = database_url {
+        cmd.env("DATABASE_URL", url);
+    }
     cmd.spawn().map_err(|e| e.into())
 }
 
@@ -129,6 +134,14 @@ fn resolve_workspace_backend() -> Option<PathBuf> {
     }
 
     None
+}
+
+fn build_database_url(app: &tauri::AppHandle) -> anyhow::Result<String> {
+    let data_dir = tauri::api::path::app_data_dir(app.package_info(), &app.env())
+        .ok_or_else(|| anyhow::anyhow!("Unable to resolve app data directory"))?;
+    std::fs::create_dir_all(&data_dir)?;
+    let db_path = data_dir.join("streaming.db");
+    Ok(format!("sqlite://{}", db_path.display()))
 }
 
 fn backend_binary_name() -> &'static str {
