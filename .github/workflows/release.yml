@@ -56,43 +56,33 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           APP="RustStream.app"
+          VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p dist/${APP}/Contents/MacOS dist/${APP}/Contents/Resources/bin
           cp target/${{ matrix.target }}/release/ruststream-desktop dist/${APP}/Contents/MacOS/RustStream
           cp target/${{ matrix.target }}/release/ruststream dist/${APP}/Contents/Resources/bin/ruststream
           chmod +x dist/${APP}/Contents/MacOS/RustStream dist/${APP}/Contents/Resources/bin/ruststream
-          python3 - <<'PY'
-from pathlib import Path
-import os
-
-app = "RustStream.app"
-version = os.environ.get("GITHUB_REF_NAME", "0.0.0")
-if version.startswith("v"):
-    version = version[1:]
-
-plist = f"""<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key>
-  <string>RustStream</string>
-  <key>CFBundleDisplayName</key>
-  <string>RustStream</string>
-  <key>CFBundleIdentifier</key>
-  <string>com.biggorilla121.ruststream</string>
-  <key>CFBundleExecutable</key>
-  <string>RustStream</string>
-  <key>CFBundlePackageType</key>
-  <string>APPL</string>
-  <key>CFBundleVersion</key>
-  <string>{version}</string>
-  <key>CFBundleShortVersionString</key>
-  <string>{version}</string>
-</dict>
-</plist>
-"""
-
-Path(f"dist/{app}/Contents/Info.plist").write_text(plist)
-PY
+          cat > dist/${APP}/Contents/Info.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>RustStream</string>
+            <key>CFBundleDisplayName</key>
+            <string>RustStream</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.biggorilla121.ruststream</string>
+            <key>CFBundleExecutable</key>
+            <string>RustStream</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleVersion</key>
+            <string>${VERSION}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${VERSION}</string>
+          </dict>
+          </plist>
+          PLIST
           ditto -c -k --sequesterRsrc --keepParent dist/${APP} ${{ matrix.asset }}
 
       - name: Package (Windows)
