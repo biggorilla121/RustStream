@@ -11,6 +11,11 @@ if ! command -v cargo >/dev/null 2>&1; then
   exit 1
 fi
 
+if command -v rustup >/dev/null 2>&1; then
+  echo "Updating Rust toolchain..."
+  rustup update stable
+fi
+
 if ! command -v cargo-tauri >/dev/null 2>&1; then
   echo "Installing tauri-cli v1..."
   cargo install tauri-cli --version 1.5.6 --locked
