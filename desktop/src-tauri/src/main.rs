@@ -96,7 +96,7 @@ fn spawn_command(path: PathBuf, port: u16) -> anyhow::Result<Child> {
 }
 
 fn resolve_packaged_backend(app: &tauri::AppHandle) -> Option<PathBuf> {
-    let resource_dir = tauri::api::path::resource_dir(app.package_info(), app.env())?;
+    let resource_dir = tauri::api::path::resource_dir(app.package_info(), &app.env())?;
     let candidate = resource_dir.join(backend_binary_name());
     if candidate.exists() {
         Some(candidate)
