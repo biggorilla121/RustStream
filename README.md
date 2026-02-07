@@ -28,7 +28,7 @@ Server starts at `http://127.0.0.1:3000`.
 
 ## Downloads
 
-Prebuilt binaries are published on GitHub Releases for macOS, Windows, and Linux.
+Installers are published on GitHub Releases for macOS, Windows, and Linux.
 To create a release, tag a version and push the tag:
 
 ```bash

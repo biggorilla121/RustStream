@@ -7,28 +7,28 @@ on:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }})
+    name: Build Installer (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - name: linux-x64
+            os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            bin: ruststream
-            archive: ruststream-linux-x86_64.tar.gz
-          - os: macos-latest
+            asset: RustStream-linux-x64.deb
+          - name: macos-arm64
+            os: macos-14
             target: aarch64-apple-darwin
-            bin: ruststream
-            archive: ruststream-macos-aarch64.tar.gz
-          - os: macos-latest
+            asset: RustStream-macos-arm64.pkg
+          - name: macos-x64
+            os: macos-13
             target: x86_64-apple-darwin
-            bin: ruststream
-            archive: ruststream-macos-x86_64.tar.gz
-          - os: windows-latest
+            asset: RustStream-macos-x64.pkg
+          - name: windows-x64
+            os: windows-latest
             target: x86_64-pc-windows-msvc
-            bin: ruststream.exe
-            archive: ruststream-windows-x86_64.zip
+            asset: RustStream-windows-x64.msi
 
     steps:
       - uses: actions/checkout@v4
@@ -41,19 +41,31 @@ jobs:
       - name: Build
         run: cargo build --release -p streaming-app --target ${{ matrix.target }}
 
-      - name: Package (unix)
-        if: runner.os != 'Windows'
+      - name: Package (Linux .deb)
+        if: runner.os == 'Linux'
         run: |
-          cp target/${{ matrix.target }}/release/streaming-app ${{ matrix.bin }}
-          tar -czf ${{ matrix.archive }} ${{ matrix.bin }}
+          cargo install cargo-deb
+          cargo deb -p streaming-app --target ${{ matrix.target }} --no-build
+          cp target/${{ matrix.target }}/debian/*.deb ${{ matrix.asset }}
 
-      - name: Package (windows)
+      - name: Package (macOS .pkg)
+        if: runner.os == 'macOS'
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p pkgroot/usr/local/bin
+          cp target/${{ matrix.target }}/release/ruststream pkgroot/usr/local/bin/ruststream
+          chmod +x pkgroot/usr/local/bin/ruststream
+          pkgbuild --root pkgroot --identifier com.biggorilla121.ruststream --version "$VERSION" ${{ matrix.asset }}
+
+      - name: Package (Windows .msi)
         if: runner.os == 'Windows'
         run: |
-          copy target\${{ matrix.target }}\release\streaming-app.exe ${{ matrix.bin }}
-          powershell -Command "Compress-Archive -Path ${{ matrix.bin }} -DestinationPath ${{ matrix.archive }}"
+          choco install wixtoolset -y
+          cargo install cargo-wix
+          cargo wix -p streaming-app --target ${{ matrix.target }}
+          for /f %%f in ('dir /b target\\wix\\*.msi') do copy target\\wix\\%%f ${{ matrix.asset }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.archive }}
+          files: ${{ matrix.asset }}

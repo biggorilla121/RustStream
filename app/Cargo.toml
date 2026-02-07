@@ -1,12 +1,23 @@
 [package]
 name = "streaming-app"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.75"
+license = "MIT"
+description = "RustStream local streaming web app"
 
 [[bin]]
-name = "streaming-app"
+name = "ruststream"
 path = "src/main.rs"
+
+[package.metadata.wix]
+product-name = "RustStream"
+license = "LICENSE"
+
+[package.metadata.deb]
+maintainer = "RustStream"
+section = "video"
+priority = "optional"
 
 [dependencies]
 axum = { workspace = true }
