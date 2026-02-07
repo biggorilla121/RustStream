@@ -153,7 +153,8 @@ fn build_database_url(app: &tauri::AppHandle) -> anyhow::Result<String> {
         .ok_or_else(|| anyhow::anyhow!("Unable to resolve app data directory"))?;
     std::fs::create_dir_all(&data_dir)?;
     let db_path = data_dir.join("streaming.db");
-    let path_str = db_path.to_string_lossy().to_string();
+    let mut path_str = db_path.to_string_lossy().to_string();
+    path_str = path_str.replace(" ", "%20");
     Ok(format!("sqlite://{}", path_str))
 }
 
