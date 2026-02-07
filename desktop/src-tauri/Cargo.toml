@@ -7,7 +7,7 @@ edition = "2021"
 tauri-build = { version = "1.5" }
 
 [dependencies]
-tauri = { version = "1.5", features = ["api-all"] }
+tauri = { version = "1.5" }
 anyhow = { workspace = true }
 
 [dependencies.serde]

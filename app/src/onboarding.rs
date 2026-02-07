@@ -210,7 +210,7 @@ fn render_onboarding(f: &mut ratatui::Frame, state: &OnboardingState) {
             Constraint::Length(9),
             Constraint::Length(3),
         ])
-        .split(f.area());
+        .split(f.size());
 
     let title = Paragraph::new(Line::from(vec![
         Span::styled("RustStream Onboarding", Style::default().add_modifier(Modifier::BOLD)),
