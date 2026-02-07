@@ -27,7 +27,9 @@ Server starts at `http://127.0.0.1:3000`.
 
 ## Downloads
 
-Installers are published on GitHub Releases for macOS, Windows, and Linux.
+Desktop downloads are published on GitHub Releases for macOS, Windows, and Linux.
+After download, run the app and you will be prompted once for your TMDB v4 Read Access Token.
+
 To create a release, tag a version and push the tag:
 
 ```bash

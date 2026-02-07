@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build Installer (${{ matrix.name }})
+    name: Build Desktop (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,19 +16,19 @@ jobs:
           - name: linux-x64
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            asset: RustStream-linux-x64.deb
+            asset: RustStream-linux-x64.tar.gz
           - name: macos-arm64
             os: macos-14
             target: aarch64-apple-darwin
-            asset: RustStream-macos-arm64.pkg
+            asset: RustStream-macos-arm64.app.zip
           - name: macos-x64
             os: macos-13
             target: x86_64-apple-darwin
-            asset: RustStream-macos-x64.pkg
+            asset: RustStream-macos-x64.app.zip
           - name: windows-x64
             os: windows-latest
             target: x86_64-pc-windows-msvc
-            asset: RustStream-windows-x64.msi
+            asset: RustStream-windows-x64.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -38,32 +38,59 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Build
-        run: cargo build --release -p streaming-app --target ${{ matrix.target }}
+      - name: Build backend and desktop
+        run: |
+          cargo build --release -p streaming-app --target ${{ matrix.target }}
+          cargo build --release -p ruststream-desktop --target ${{ matrix.target }}
 
-      - name: Package (Linux .deb)
+      - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |
-          cargo install cargo-deb
-          cargo deb -p streaming-app --target ${{ matrix.target }} --no-build
-          cp target/${{ matrix.target }}/debian/*.deb ${{ matrix.asset }}
+          mkdir -p dist/RustStream/bin
+          cp target/${{ matrix.target }}/release/ruststream-desktop dist/RustStream/RustStream
+          cp target/${{ matrix.target }}/release/ruststream dist/RustStream/bin/ruststream
+          chmod +x dist/RustStream/RustStream dist/RustStream/bin/ruststream
+          tar -czf ${{ matrix.asset }} -C dist RustStream
 
-      - name: Package (macOS .pkg)
+      - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          mkdir -p pkgroot/usr/local/bin
-          cp target/${{ matrix.target }}/release/ruststream pkgroot/usr/local/bin/ruststream
-          chmod +x pkgroot/usr/local/bin/ruststream
-          pkgbuild --root pkgroot --identifier com.biggorilla121.ruststream --version "$VERSION" ${{ matrix.asset }}
+          APP="RustStream.app"
+          mkdir -p dist/${APP}/Contents/MacOS dist/${APP}/Contents/Resources/bin
+          cp target/${{ matrix.target }}/release/ruststream-desktop dist/${APP}/Contents/MacOS/RustStream
+          cp target/${{ matrix.target }}/release/ruststream dist/${APP}/Contents/Resources/bin/ruststream
+          chmod +x dist/${APP}/Contents/MacOS/RustStream dist/${APP}/Contents/Resources/bin/ruststream
+          cat > dist/${APP}/Contents/Info.plist <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>RustStream</string>
+  <key>CFBundleDisplayName</key>
+  <string>RustStream</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.biggorilla121.ruststream</string>
+  <key>CFBundleExecutable</key>
+  <string>RustStream</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>${GITHUB_REF_NAME#v}</string>
+  <key>CFBundleShortVersionString</key>
+  <string>${GITHUB_REF_NAME#v}</string>
+</dict>
+</plist>
+PLIST
+          ditto -c -k --sequesterRsrc --keepParent dist/${APP} ${{ matrix.asset }}
 
-      - name: Package (Windows .msi)
+      - name: Package (Windows)
         if: runner.os == 'Windows'
         run: |
-          choco install wixtoolset -y
-          cargo install cargo-wix
-          cargo wix -p streaming-app --target ${{ matrix.target }}
-          for /f %%f in ('dir /b target\\wix\\*.msi') do copy target\\wix\\%%f ${{ matrix.asset }}
+          mkdir dist\\RustStream\\bin
+          copy target\\${{ matrix.target }}\\release\\ruststream-desktop.exe dist\\RustStream\\RustStream.exe
+          copy target\\${{ matrix.target }}\\release\\ruststream.exe dist\\RustStream\\bin\\ruststream.exe
+          powershell -Command \"Compress-Archive -Path dist\\\\RustStream -DestinationPath ${{ matrix.asset }}\"
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
