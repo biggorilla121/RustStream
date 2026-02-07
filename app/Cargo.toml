@@ -31,6 +31,8 @@ async-trait = { workspace = true }
 hmac = { workspace = true }
 sha2 = { workspace = true }
 hex = { workspace = true }
+ratatui = { workspace = true }
+crossterm = { workspace = true }
 
 [profile.release]
 opt-level = 3

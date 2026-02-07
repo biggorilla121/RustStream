@@ -19,11 +19,10 @@ RustStream is a local streaming web app built in Rust. It uses TMDB for metadata
 ## Quick Start
 
 ```bash
-cp .env.example .env
-# edit .env and set TMDB_API_KEY
-
 cargo run --release
 ```
+
+On first run, a TUI onboarding screen prompts for your TMDB key and writes a `.env` file.
 
 Server starts at `http://127.0.0.1:3000`.
 
@@ -81,6 +80,7 @@ streaming/
 │   │   ├── config.rs        # Env/config loading
 │   │   ├── db.rs            # SQLite schema bootstrap
 │   │   ├── models.rs        # Data types
+│   │   ├── onboarding.rs    # First-run TUI setup
 │   │   ├── templates.rs     # HTML rendering (inline templates)
 │   │   ├── tmdb.rs          # TMDB client
 │   │   └── vidking.rs       # Vidking embed URLs

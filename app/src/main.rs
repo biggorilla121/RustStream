@@ -23,6 +23,7 @@ mod models;
 mod tmdb;
 mod vidking;
 mod templates;
+mod onboarding;
 
 use crate::auth::{AuthManager, Session, SessionStore, SESSION_COOKIE_NAME, WatchHistoryItem};
 use crate::config::Config;
@@ -44,6 +45,8 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     info!("Starting streaming app...");
+
+    onboarding::maybe_run_onboarding()?;
 
     let config = Config::new()?;
     info!("Configuration loaded");
