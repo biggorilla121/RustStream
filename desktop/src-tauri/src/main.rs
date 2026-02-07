@@ -74,12 +74,12 @@ fn read_port() -> u16 {
 }
 
 fn spawn_backend(app: &tauri::AppHandle, port: u16) -> anyhow::Result<Child> {
-    if let Ok(path) = std::env::var("RUSTSTREAM_BACKEND") {
-        return spawn_command(PathBuf::from(path), port);
-    }
-
     if let Some(path) = resolve_packaged_backend(app) {
         return spawn_command(path, port);
+    }
+
+    if let Ok(path) = std::env::var("RUSTSTREAM_BACKEND") {
+        return spawn_command(PathBuf::from(path), port);
     }
 
     if let Some(path) = resolve_workspace_backend() {
@@ -97,7 +97,7 @@ fn spawn_command(path: PathBuf, port: u16) -> anyhow::Result<Child> {
 
 fn resolve_packaged_backend(app: &tauri::AppHandle) -> Option<PathBuf> {
     let resource_dir = tauri::api::path::resource_dir(app.package_info(), &app.env())?;
-    let candidate = resource_dir.join(backend_binary_name());
+    let candidate = resource_dir.join("bin").join(backend_binary_name());
     if candidate.exists() {
         Some(candidate)
     } else {
