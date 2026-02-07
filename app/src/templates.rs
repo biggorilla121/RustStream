@@ -424,7 +424,7 @@ pub fn render_player(
     } else {
         // Use iframe for vidking embed
         // Admin users get ad-blocking features
-        let sandbox_attr = if is_admin {
+        let sandbox_attr = if _is_admin {
             r#"sandbox="allow-scripts allow-same-origin allow-fullscreen allow-presentation""#
         } else {
             ""
