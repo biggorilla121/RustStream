@@ -1,4 +1,4 @@
-use bcrypt::{hash, verify, DEFAULT_COST};
+use bcrypt::{hash, DEFAULT_COST};
 use chrono::{Duration, Utc};
 use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
@@ -6,7 +6,6 @@ use sha2::Sha256;
 use sqlx::{Pool, Sqlite};
 use tracing::info;
 
-pub const SESSION_COOKIE_NAME: &str = "session_id";
 pub const SESSION_SECRET: &[u8] = b"your-32-byte-secret-key-change-me-in-prod!";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -118,81 +117,48 @@ impl AuthManager {
         Self { db }
     }
 
-    pub async fn init_admin_user(&self) -> anyhow::Result<()> {
-        let admin_exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE username = 'admin')"
+    pub async fn init_local_user(&self) -> anyhow::Result<()> {
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM users WHERE username = 'local')"
         )
         .fetch_one(&self.db)
         .await?;
 
-        if !admin_exists {
-            info!("Creating default admin user...");
-            let password_hash = hash("admin123", DEFAULT_COST)?;
+        if !exists {
+            info!("Creating local user...");
+            let password_hash = hash("local", DEFAULT_COST)?;
             
             sqlx::query(
                 "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, ?)"
             )
-            .bind("admin")
+            .bind("local")
             .bind(&password_hash)
-            .bind(true)
+            .bind(false)
             .execute(&self.db)
             .await?;
-            
-            info!("Default admin user created (username: admin, password: admin123)");
-            info!("IMPORTANT: Please change the default password after first login!");
         }
 
         Ok(())
     }
 
-    pub async fn authenticate(&self, username: &str, password: &str) -> anyhow::Result<Option<(i64, String, bool)>> {
-        let user: Option<(i64, String, bool, String)> = sqlx::query_as(
-            "SELECT id, username, is_admin, password_hash FROM users WHERE username = ?"
+    pub async fn get_local_session(&self) -> anyhow::Result<Session> {
+        let row: Option<(i64, String, bool)> = sqlx::query_as(
+            "SELECT id, username, is_admin FROM users WHERE username = 'local' LIMIT 1"
         )
-        .bind(username)
         .fetch_optional(&self.db)
         .await?;
 
-        if let Some((id, db_username, is_admin, password_hash)) = user {
-            if verify(password, &password_hash)? {
-                info!("User {} logged in successfully", username);
-                return Ok(Some((id, db_username, is_admin)));
-            }
-        }
-
-        Ok(None)
+        let (user_id, username, is_admin) = row.ok_or_else(|| anyhow::anyhow!("Local user missing"))?;
+        Ok(Session {
+            id: "local".to_string(),
+            user_id,
+            username,
+            is_admin,
+            expires_at: i64::MAX,
+        })
     }
 
-    pub async fn create_user(&self, username: &str, password: &str, is_admin: bool) -> anyhow::Result<()> {
-        let password_hash = hash(password, DEFAULT_COST)?;
-        
-        sqlx::query(
-            "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, ?)"
-        )
-        .bind(username)
-        .bind(&password_hash)
-        .bind(is_admin)
-        .execute(&self.db)
-        .await?;
-
-        info!("Created user: {} (admin: {})", username, is_admin);
-        Ok(())
-    }
-
-    pub async fn change_password(&self, user_id: i64, new_password: &str) -> anyhow::Result<()> {
-        let password_hash = hash(new_password, DEFAULT_COST)?;
-        
-        sqlx::query(
-            "UPDATE users SET password_hash = ? WHERE id = ?"
-        )
-        .bind(&password_hash)
-        .bind(user_id)
-        .execute(&self.db)
-        .await?;
-
-        info!("Password changed for user_id: {}", user_id);
-        Ok(())
-    }
+    // User management is intentionally removed for the single-user local mode.
 
     pub async fn add_to_watch_history(
         &self,

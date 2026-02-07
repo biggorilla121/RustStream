@@ -8,8 +8,7 @@ RustStream is a local streaming web app built in Rust. It uses TMDB for metadata
 - Search with filters (genre, year, rating, sort)
 - Detailed movie and TV pages with cast and similar titles
 - In-browser player using Vidking embed URLs
-- Watch history and progress tracking (requires login)
-- Admin login with extra player protections (popup blocking)
+- Watch history and progress tracking (stored locally)
 
 ## Requirements
 
@@ -46,13 +45,6 @@ Environment variables:
 - `DATABASE_URL` (optional, default: `sqlite://./streaming.db`)
 - `PORT` (optional, default: `3000`)
 
-## Authentication
-
-- A default admin user is created on first run:
-  - Username: `admin`
-  - Password: `admin123`
-- Login enables watch history tracking and admin-only player protections.
-
 ## Routes
 
 Pages:
@@ -62,8 +54,6 @@ Pages:
 - `GET /movie/:id` - Movie details
 - `GET /tv/:id` - TV details
 - `GET /player/:media_type/:id` - Player (TV requires `season` and `episode` query params)
-- `GET /login` / `POST /login` - Admin login
-- `GET /logout` - Logout
 - `GET /history` - Watch history
 
 API:

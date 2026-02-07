@@ -1,48 +1,6 @@
 use crate::tmdb::{Genre, MovieDetail, SearchResult, TvShowDetail};
 use crate::vidking::StreamSource;
 
-pub fn render_login(username: Option<&str>, error: Option<&str>) -> String {
-    let mut html = String::new();
-    html.push_str(&base_start("Login - RustStream", username));
-
-    html.push_str(
-        r#"
-    <div class="login-page">
-        <h1>Admin Login</h1>
-        <div class="login-form">
-            <form action="/login" method="POST">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required autofocus>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit">Login</button>
-            </form>
-    "#,
-    );
-
-    if let Some(err) = error {
-        html.push_str(&format!(r#"<div class="error-message">{}</div>"#, err));
-    }
-
-    html.push_str(
-        r#"
-        </div>
-        <div class="login-info">
-            <p>Default admin credentials:</p>
-            <code>Username: admin<br>Password: admin123</code>
-        </div>
-    </div>
-    "#,
-    );
-
-    html.push_str(&base_end());
-    html
-}
-
 pub fn render_home(
     username: Option<&str>,
     trending: &[SearchResult],
@@ -440,7 +398,7 @@ pub fn render_player(
     id: i64,
     poster_path: Option<&str>,
     streams: &[StreamSource],
-    is_admin: bool,
+    _is_admin: bool,
 ) -> String {
     let mut html = String::new();
 
@@ -496,44 +454,7 @@ pub fn render_player(
 
     html.push_str("</div></div>");
 
-    // Add progress tracking script
-    let ad_blocking_script = if is_admin {
-        r#"
-    <script>
-    // ADMIN: Ad blocking and popup prevention
-    (function() {
-        // Block popups and new windows
-        window.open = function() { 
-            console.log('Popup blocked by admin protection');
-            return null; 
-        };
-        
-        // Block beforeunload prompts
-        window.onbeforeunload = null;
-        
-        // Intercept click events on the iframe
-        document.addEventListener('click', function(e) {
-            // Check if click is targeting the iframe
-            if (e.target.tagName === 'IFRAME') {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Admin mode: Click intercepted');
-            }
-        }, true);
-        
-        // Block window.focus changes
-        var originalFocus = window.focus;
-        window.focus = function() {
-            console.log('Focus change blocked');
-        };
-    })();
-    </script>
-    "#
-    } else {
-        ""
-    };
-
-    html.push_str(ad_blocking_script);
+    // Admin ad-blocking was removed along with login/accounts.
 
     let tmdb_id = id;
     let media_type = media_type;
@@ -726,22 +647,13 @@ pub fn render_watch_history(
 }
 
 fn base_start(title: &str, username: Option<&str>) -> String {
-    let nav_links = if let Some(user) = username {
-        format!(
-            r#"<a href="/">Home</a>
+    let nav_links = format!(
+        r#"<a href="/">Home</a>
             <a href="/search">Search</a>
             <a href="/history">History</a>
-            <span class="user-info">👤 {}</span>
-            <a href="/logout" class="logout-btn">Logout</a>"#,
-            user
-        )
-    } else {
-        String::from(
-            r#"<a href="/">Home</a>
-            <a href="/search">Search</a>
-            <a href="/login">Login</a>"#,
-        )
-    };
+            <span class="user-info">👤 {}</span>"#,
+        username.unwrap_or("Local")
+    );
 
     format!(
         r#"<!DOCTYPE html>

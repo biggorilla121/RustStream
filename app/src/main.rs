@@ -25,7 +25,7 @@ mod vidking;
 mod templates;
 mod onboarding;
 
-use crate::auth::{AuthManager, Session, SessionStore, SESSION_COOKIE_NAME, WatchHistoryItem};
+use crate::auth::{AuthManager, Session, SessionStore};
 use crate::config::Config;
 use crate::error::AppError;
 
@@ -55,7 +55,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Database initialized");
 
     let auth_manager = AuthManager::new(db_pool.clone());
-    auth_manager.init_admin_user().await?;
+    auth_manager.init_local_user().await?;
     
     let session_store = SessionStore::new(db_pool.clone());
 
@@ -75,8 +75,6 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(home_page))
-        .route("/login", get(login_page).post(login))
-        .route("/logout", get(logout))
         .route("/search", get(search_page))
         .route("/history", get(watch_history_page))
         .route("/movie/:id", get(movie_detail_page))
@@ -96,14 +94,8 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn get_session(state: &AppState, headers: &HeaderMap) -> Option<Session> {
-    let cookie = headers.get(http::header::COOKIE)?.to_str().ok()?;
-    let session_cookie = cookie
-        .split(';')
-        .find(|c: &&str| c.trim_start().starts_with(SESSION_COOKIE_NAME))?;
-    
-    let session_value = session_cookie.split('=').nth(1)?;
-    state.sessions.validate_session(session_value).await.ok()?
+async fn get_session(state: &AppState, _headers: &HeaderMap) -> Option<Session> {
+    state.auth.get_local_session().await.ok()
 }
 
 async fn home_page(State(state): State<AppState>, headers: HeaderMap) -> Result<Html<String>, AppError> {
@@ -117,76 +109,6 @@ async fn home_page(State(state): State<AppState>, headers: HeaderMap) -> Result<
     Ok(Html(html))
 }
 
-#[derive(Deserialize)]
-struct LoginForm {
-    username: String,
-    password: String,
-}
-
-async fn login_page(State(state): State<AppState>, headers: HeaderMap) -> Result<Html<String>, AppError> {
-    let session = get_session(&state, &headers).await;
-    let username = session.as_ref().map(|s| s.username.as_str());
-    let html = templates::render_login(username, None);
-    Ok(Html(html))
-}
-
-enum LoginResponse {
-    Success(String),
-    Error(String),
-}
-
-impl IntoResponse for LoginResponse {
-    fn into_response(self) -> http::Response<Body> {
-        match self {
-            LoginResponse::Success(session_token) => {
-                let cookie = format!("{}={}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800", SESSION_COOKIE_NAME, session_token);
-                let mut response = Redirect::to("/").into_response();
-                response.headers_mut().insert(
-                    http::header::SET_COOKIE,
-                    cookie.parse().unwrap()
-                );
-                response
-            }
-            LoginResponse::Error(msg) => {
-                let html = templates::render_login(None, Some(&msg));
-                let mut response = Html(html).into_response();
-                response.headers_mut().insert(
-                    http::header::SET_COOKIE,
-                    format!("{}={}; Path=/; HttpOnly; SameSite=Lax; Max-Age=0", SESSION_COOKIE_NAME, "").parse().unwrap()
-                );
-                response
-            }
-        }
-    }
-}
-
-async fn login(
-    State(state): State<AppState>,
-    axum::Form(form): axum::Form<LoginForm>,
-) -> Result<LoginResponse, AppError> {
-    match state.auth.authenticate(&form.username, &form.password).await {
-        Ok(Some((user_id, username, is_admin))) => {
-            let session_token = state.sessions.create_session(user_id, &username, is_admin).await?;
-            Ok(LoginResponse::Success(session_token))
-        }
-        Ok(None) => Ok(LoginResponse::Error("Invalid username or password".to_string())),
-        Err(_) => Ok(LoginResponse::Error("Authentication error".to_string())),
-    }
-}
-
-async fn logout(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
-    if let Some(session) = get_session(&state, &headers).await {
-        state.sessions.delete_session(&session.id).await.ok();
-    }
-    
-    let cookie = format!("{}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0", SESSION_COOKIE_NAME);
-    let mut response = Redirect::to("/").into_response();
-    response.headers_mut().insert(
-        http::header::SET_COOKIE,
-        cookie.parse().unwrap()
-    );
-    response
-}
 
 #[derive(Deserialize)]
 struct SearchQuery {
@@ -336,7 +258,7 @@ async fn player_page(
     Query(params): Query<PlayerQuery>,
 ) -> Result<Html<String>, AppError> {
     let session = get_session(&state, &headers).await;
-    let is_admin = session.as_ref().map(|s| s.is_admin).unwrap_or(false);
+    let is_admin = false;
     let username = session.as_ref().map(|s| s.username.as_str());
     
     let (title, poster_path) = if media_type == "movie" {
