@@ -12,8 +12,13 @@ if ! command -v cargo >/dev/null 2>&1; then
 fi
 
 if ! command -v cargo-tauri >/dev/null 2>&1; then
-  echo "Installing tauri-cli..."
-  cargo install tauri-cli
+  echo "Installing tauri-cli v1..."
+  cargo install tauri-cli --version 1.5.6 --locked
+else
+  if ! cargo tauri --version | grep -q '^1\\.'; then
+    echo "Re-installing tauri-cli v1..."
+    cargo install tauri-cli --version 1.5.6 --locked
+  fi
 fi
 
 echo "Building backend (release)..."
