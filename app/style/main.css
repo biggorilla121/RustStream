@@ -1,0 +1,456 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #141414;
+    color: #fff;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Navigation */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-brand a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e50914;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #b3b3b3;
+}
+
+/* Main Content */
+main {
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
+}
+
+/* Home Page */
+.home-page {
+    padding: 2rem;
+}
+
+.home-page h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.home-page > p {
+    color: #b3b3b3;
+    margin-bottom: 3rem;
+}
+
+.content-section {
+    margin-bottom: 3rem;
+}
+
+.content-section h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Content Card */
+.content-card {
+    transition: transform 0.3s;
+}
+
+.content-card:hover {
+    transform: scale(1.05);
+}
+
+.content-card img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 4px;
+    background-color: #333;
+}
+
+.card-info {
+    padding: 0.75rem 0;
+}
+
+.card-info h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-info .rating {
+    color: #ffd700;
+    font-size: 0.85rem;
+}
+
+.card-info .media-type {
+    display: inline-block;
+    background: #e50914;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Detail Page */
+.detail-page {
+    min-height: 100vh;
+}
+
+.detail-hero {
+    background-size: cover;
+    background-position: center;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    padding: 4rem 2rem;
+}
+
+.detail-content {
+    display: flex;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.detail-poster {
+    width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.detail-info {
+    flex: 1;
+    max-width: 600px;
+}
+
+.detail-info h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    color: #b3b3b3;
+}
+
+.rating {
+    color: #ffd700;
+}
+
+.genres {
+    color: #b3b3b3;
+    margin-bottom: 1.5rem;
+}
+
+.overview {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.play-button {
+    display: inline-block;
+    background: #e50914;
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.play-button:hover {
+    background: #f40612;
+}
+
+/* Cast Section */
+.cast-section,
+.similar-section {
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cast-section h2,
+.similar-section h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.cast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.cast-member {
+    text-align: center;
+}
+
+.cast-member img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+    background-color: #333;
+}
+
+.cast-member h4 {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.cast-member p {
+    color: #b3b3b3;
+    font-size: 0.8rem;
+}
+
+/* Search Page */
+.search-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.search-page h1 {
+    margin-bottom: 2rem;
+}
+
+.search-box {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 1rem;
+    font-size: 1.1rem;
+    background: #333;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #e50914;
+}
+
+.search-box button {
+    padding: 1rem 2rem;
+    background: #e50914;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.search-box button:hover {
+    background: #f40612;
+}
+
+.loading,
+.no-results {
+    text-align: center;
+    padding: 4rem;
+    color: #b3b3b3;
+}
+
+/* Player Page */
+.player-page {
+    min-height: 100vh;
+    background: #000;
+}
+
+.player-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: #141414;
+}
+
+.back-button {
+    color: #b3b3b3;
+    font-size: 1.1rem;
+}
+
+.back-button:hover {
+    color: white;
+}
+
+.player-header h1 {
+    font-size: 1.3rem;
+}
+
+.player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.video-player {
+    width: 100%;
+    max-width: 1200px;
+    aspect-ratio: 16/9;
+    background: #000;
+}
+
+.no-streams {
+    color: #b3b3b3;
+    padding: 4rem;
+}
+
+.stream-selector {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.stream-selector h3 {
+    margin-bottom: 1rem;
+}
+
+.stream-selector button {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: #333;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+}
+
+.stream-selector button:hover {
+    background: #444;
+}
+
+.stream-selector button.active {
+    border-color: #e50914;
+    background: #2a2a2a;
+}
+
+/* Seasons Section */
+.seasons-section {
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.seasons-section h2 {
+    margin-bottom: 1.5rem;
+}
+
+.season-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.season-selector button {
+    padding: 0.75rem 1.5rem;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.season-selector button:hover {
+    background: #444;
+}
+
+.season-selector button.active {
+    background: #e50914;
+}
+
+.episodes-list {
+    color: #b3b3b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 1rem;
+    }
+    
+    .nav-links {
+        gap: 1rem;
+    }
+    
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .detail-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .detail-poster {
+        width: 200px;
+    }
+    
+    .detail-info h1 {
+        font-size: 2rem;
+    }
+    
+    .meta {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - RustStream{% endblock %}
+
+{% block content %}
+<div class="player-page">
+    <div class="player-header">
+        {% if media_type == "movie" %}
+        <a href="/movie/{{ id }}" class="back-button">← Back</a>
+        {% else %}
+        <a href="/tv/{{ id }}" class="back-button">← Back</a>
+        {% endif %}
+        <h1>{{ title }}</h1>
+    </div>
+    
+    <div class="player-container">
+        {% if streams.is_empty() %}
+        <div class="no-streams">
+            <p>No streams available for this title.</p>
+        </div>
+        {% else %}
+        <video class="video-player" controls autoplay>
+            <source src="{{ streams[0].id }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <div class="stream-selector">
+            <h3>Select Source:</h3>
+            {% for stream in streams %}
+            <button>
+                {{ stream.name }} - {{ stream.quality.as_ref().unwrap_or(&"Unknown".to_string()) }}
+            </button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

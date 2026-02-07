@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ show.name }} - RustStream{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+    <div class="detail-hero" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url(https://image.tmdb.org/t/p/original{{ show.backdrop_path.as_ref().unwrap_or(&"".to_string()) }});">
+        <div class="detail-content">
+            <img class="detail-poster" src="https://image.tmdb.org/t/p/w500{{ show.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="{{ show.name }}" onerror="this.src='/static/placeholder.jpg'">
+            <div class="detail-info">
+                <h1>{{ show.name }}</h1>
+                <div class="meta">
+                    <span class="rating">⭐ {{ "%.1f"|format(show.vote_average) }} ({{ show.vote_count }} votes)</span>
+                    {% if show.first_air_date.is_some() %}
+                    <span class="year">{{ show.first_air_date.as_ref().unwrap().split('-').next().unwrap_or("") }}</span>
+                    {% endif %}
+                    {% if show.number_of_seasons.is_some() %}
+                    <span class="seasons">{{ show.number_of_seasons.unwrap() }} seasons</span>
+                    {% endif %}
+                </div>
+                <p class="genres">
+                    {% for genre in show.genres %}
+                        {{ genre.name }}{% if !loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                <p class="overview">{{ show.overview.as_ref().unwrap_or(&"No overview available.".to_string()) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if !show.seasons.is_empty() %}
+    <section class="seasons-section">
+        <h2>Seasons</h2>
+        <div class="season-list">
+            {% for season in show.seasons %}
+            <div class="season-item">
+                <h3>{{ season.name }}</h3>
+                <p>{{ season.episode_count }} episodes</p>
+                {% if season.season_number > 0 %}
+                <a href="/player/tv/{{ show.id }}?season={{ season.season_number }}&episode=1" class="play-button-small">▶ Play</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if show.credits.is_some() %}
+    <section class="cast-section">
+        <h2>Cast</h2>
+        <div class="cast-grid">
+            {% for member in show.credits.as_ref().unwrap().cast %}
+            <div class="cast-member">
+                <img src="https://image.tmdb.org/t/p/w185{{ member.profile_path.as_ref().unwrap_or(&"".to_string()) }}" alt="{{ member.name }}" onerror="this.src='/static/placeholder-avatar.jpg'">
+                <h4>{{ member.name }}</h4>
+                <p>{{ member.character }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if show.similar.is_some() %}
+    <section class="similar-section">
+        <h2>Similar Shows</h2>
+        <div class="content-grid">
+            {% for item in show.similar.as_ref().unwrap().results %}
+            <div class="content-card">
+                <a href="/tv/{{ item.id }}">
+                    <img src="https://image.tmdb.org/t/p/w342{{ item.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="Show" onerror="this.src='/static/placeholder.jpg'">
+                    <div class="card-info">
+                        <h3>{{ item.name.as_ref().unwrap_or(&"Unknown".to_string()) }}</h3>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

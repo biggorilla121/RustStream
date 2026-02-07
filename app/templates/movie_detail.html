@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }} - RustStream{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+    <div class="detail-hero" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url(https://image.tmdb.org/t/p/original{{ movie.backdrop_path.as_ref().unwrap_or(&"".to_string()) }});">
+        <div class="detail-content">
+            <img class="detail-poster" src="https://image.tmdb.org/t/p/w500{{ movie.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="{{ movie.title }}" onerror="this.src='/static/placeholder.jpg'">
+            <div class="detail-info">
+                <h1>{{ movie.title }}</h1>
+                <div class="meta">
+                    <span class="rating">⭐ {{ "%.1f"|format(movie.vote_average) }} ({{ movie.vote_count }} votes)</span>
+                    {% if movie.release_date.is_some() %}
+                    <span class="year">{{ movie.release_date.as_ref().unwrap().split('-').next().unwrap_or("") }}</span>
+                    {% endif %}
+                    {% if movie.runtime.is_some() %}
+                    <span class="runtime">{{ movie.runtime.unwrap() / 60 }}h {{ movie.runtime.unwrap() % 60 }}m</span>
+                    {% endif %}
+                </div>
+                <p class="genres">
+                    {% for genre in movie.genres %}
+                        {{ genre.name }}{% if !loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                <p class="overview">{{ movie.overview.as_ref().unwrap_or(&"No overview available.".to_string()) }}</p>
+                
+                <div class="actions">
+                    <a href="/player/movie/{{ movie.id }}" class="play-button">▶ Watch Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if movie.credits.is_some() %}
+    <section class="cast-section">
+        <h2>Cast</h2>
+        <div class="cast-grid">
+            {% for member in movie.credits.as_ref().unwrap().cast %}
+            <div class="cast-member">
+                <img src="https://image.tmdb.org/t/p/w185{{ member.profile_path.as_ref().unwrap_or(&"".to_string()) }}" alt="{{ member.name }}" onerror="this.src='/static/placeholder-avatar.jpg'">
+                <h4>{{ member.name }}</h4>
+                <p>{{ member.character }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if movie.similar.is_some() %}
+    <section class="similar-section">
+        <h2>Similar Movies</h2>
+        <div class="content-grid">
+            {% for item in movie.similar.as_ref().unwrap().results %}
+            <div class="content-card">
+                <a href="/movie/{{ item.id }}">
+                    <img src="https://image.tmdb.org/t/p/w342{{ item.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="Movie" onerror="this.src='/static/placeholder.jpg'">
+                    <div class="card-info">
+                        <h3>{{ item.title.as_ref().unwrap_or(&"Unknown".to_string()) }}</h3>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

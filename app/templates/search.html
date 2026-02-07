@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Search - RustStream{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h1>Search Movies & TV Shows</h1>
+    
+    <form class="search-box" action="/search" method="get">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search for movies, TV shows..."
+            value="{{ query }}"
+            autofocus
+        >
+        <button type="submit">Search</button>
+    </form>
+    
+    {% if !query.is_empty() %}
+        {% if results.is_empty() %}
+            <div class="no-results">No results found for "{{ query }}"</div>
+        {% else %}
+            <div class="content-grid">
+                {% for item in results %}
+                <div class="content-card">
+                    {% if item.media_type == "movie" %}
+                    <a href="/movie/{{ item.id }}">
+                    {% else %}
+                    <a href="/tv/{{ item.id }}">
+                    {% endif %}
+                        <img src="https://image.tmdb.org/t/p/w342{{ item.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="Content" onerror="this.src='/static/placeholder.jpg'">
+                        <div class="card-info">
+                            {% if item.title.is_some() %}
+                            <h3>{{ item.title.as_ref().unwrap() }}</h3>
+                            {% else %}
+                            <h3>{{ item.name.as_ref().unwrap_or(&"Unknown".to_string()) }}</h3>
+                            {% endif %}
+                            <p class="rating">⭐ {{ "%.1f"|format(item.vote_average) }}</p>
+                            {% if item.media_type == "movie" %}
+                            <span class="media-type">Movie</span>
+                            {% else %}
+                            <span class="media-type">TV Show</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

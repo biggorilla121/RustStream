@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-page">
+    <h1>Welcome to RustStream</h1>
+    <p>Your favorite movies and TV shows, streamed locally.</p>
+    
+    <section class="content-section">
+        <h2>Trending Movies</h2>
+        <div class="content-grid">
+            {% for movie in trending %}
+            <div class="content-card">
+                <a href="/movie/{{ movie.id }}">
+                    <img src="https://image.tmdb.org/t/p/w342{{ movie.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="Movie" onerror="this.src='/static/placeholder.jpg'">
+                    <div class="card-info">
+                        <h3>{{ movie.title.as_ref().unwrap_or(&"Unknown".to_string()) }}</h3>
+                        <p class="rating">⭐ {{ "%.1f"|format(movie.vote_average) }}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    
+    <section class="content-section">
+        <h2>Popular TV Shows</h2>
+        <div class="content-grid">
+            {% for show in popular_tv %}
+            <div class="content-card">
+                <a href="/tv/{{ show.id }}">
+                    <img src="https://image.tmdb.org/t/p/w342{{ show.poster_path.as_ref().unwrap_or(&"".to_string()) }}" alt="TV Show" onerror="this.src='/static/placeholder.jpg'">
+                    <div class="card-info">
+                        <h3>{{ show.name.as_ref().unwrap_or(&"Unknown".to_string()) }}</h3>
+                        <p class="rating">⭐ {{ "%.1f"|format(show.vote_average) }}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
