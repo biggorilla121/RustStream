@@ -39,16 +39,15 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-Edit `.env` and add your API keys:
+Edit `.env` and add your API key:
 
 ```env
 TMDB_API_KEY=your_tmdb_api_key_here
-VIDKING_API_KEY=your_vidking_api_key_here
 ```
 
-To get your API keys:
+To get your API key:
 - **TMDB**: Sign up at https://www.themoviedb.org/settings/api
-- **Vidking**: Get from your Vidking dashboard
+Vidking does not require an API key.
 
 ### Step 3: Build the project
 
