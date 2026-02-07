@@ -26,6 +26,16 @@ On first run, a TUI onboarding screen prompts for your TMDB key and writes a `.e
 
 Server starts at `http://127.0.0.1:3000`.
 
+## Downloads
+
+Prebuilt binaries are published on GitHub Releases for macOS, Windows, and Linux.
+To create a release, tag a version and push the tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
 ## Configuration
 
 Environment variables:

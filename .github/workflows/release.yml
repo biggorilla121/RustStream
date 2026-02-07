@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bin: ruststream
+            archive: ruststream-linux-x86_64.tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            bin: ruststream
+            archive: ruststream-macos-aarch64.tar.gz
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            bin: ruststream
+            archive: ruststream-macos-x86_64.tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin: ruststream.exe
+            archive: ruststream-windows-x86_64.zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release -p streaming-app --target ${{ matrix.target }}
+
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        run: |
+          cp target/${{ matrix.target }}/release/streaming-app ${{ matrix.bin }}
+          tar -czf ${{ matrix.archive }} ${{ matrix.bin }}
+
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        run: |
+          copy target\${{ matrix.target }}\release\streaming-app.exe ${{ matrix.bin }}
+          powershell -Command "Compress-Archive -Path ${{ matrix.bin }} -DestinationPath ${{ matrix.archive }}"
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.archive }}
